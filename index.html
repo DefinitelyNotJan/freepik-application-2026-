@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Jan Lönnqvist | AI Creative Consultant | Freepik</title>
+    <script>
+    document.addEventListener('contextmenu',function(e){e.preventDefault()});
+    document.addEventListener('keydown',function(e){
+        if(e.key==='F12')e.preventDefault();
+        if(e.ctrlKey&&e.shiftKey&&['I','i','J','j','C','c'].includes(e.key))e.preventDefault();
+        if(e.ctrlKey&&['u','U','s','S'].includes(e.key))e.preventDefault();
+        if(e.metaKey&&e.altKey&&['I','i','J','j','C','c'].includes(e.key))e.preventDefault();
+        if(e.metaKey&&['u','U','s','S'].includes(e.key))e.preventDefault();
+    });
+    document.addEventListener('dragstart',function(e){e.preventDefault()});
+    document.addEventListener('selectstart',function(e){
+        if(e.target.closest&&(e.target.closest('a')||e.target.closest('input')))return;
+        e.preventDefault();
+    });
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -978,7 +993,7 @@
             </div>
             <div class="why-item">
                 <h3>Enterprise Understanding</h3>
-                <p>DHL, Rituals, IKEA, HelloFresh. I know enterprise clients: their processes, concerns, and need for scalable solutions.</p>
+                <p>Agency work for DHL, Rituals, IKEA, HelloFresh. I know enterprise clients: their processes, concerns, and need for scalable solutions.</p>
             </div>
             <div class="why-item">
                 <h3>Production Background</h3>
