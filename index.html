@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Jan Lönnqvist | AI Creative Consultant | Freepik</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --piki: #336aea;
+            --deep: #22244e;
+            --med: #17d1c6;
+            --red: #ff7d6a;
+            --cream: #faf6e7;
+            --white: #fff;
+            --black: #0d0d12;
+            --gray: #8888a0;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* CROSSHAIR CURSOR                                */
+        /* ═══════════════════════════════════════════════ */
+        .crosshair {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+        }
+        .crosshair-h, .crosshair-v {
+            position: absolute;
+            background: var(--white);
+        }
+        .crosshair-h {
+            width: 24px;
+            height: 1px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .crosshair-v {
+            width: 1px;
+            height: 24px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .crosshair-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--piki);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .crosshair.hover .crosshair-dot {
+            transform: translate(-50%, -50%) scale(3);
+            background: var(--med);
+        }
+        .crosshair-coords {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            font-size: 9px;
+            font-family: monospace;
+            color: var(--gray);
+            letter-spacing: 1px;
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* NOISE GRAIN OVERLAY                             */
+        /* ═══════════════════════════════════════════════ */
+        .grain {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* INTRO - PROMPT TYPING                           */
+        /* ═══════════════════════════════════════════════ */
+        #intro {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #intro.exit {
+            animation: wipeUp 0.8s cubic-bezier(0.7,0,0.3,1) forwards;
+        }
+        @keyframes wipeUp {
+            to { clip-path: inset(0 0 100% 0); }
+        }
+        .intro-terminal {
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--gray);
+        }
+        .intro-terminal span { color: var(--med); }
+        .intro-terminal .typed {
+            color: var(--white);
+            border-right: 2px solid var(--piki);
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        /* ═══════════════════════════════════════════════ */
+        /* NAV - MINIMAL TOP BAR                           */
+        /* ═══════════════════════════════════════════════ */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            background: linear-gradient(180deg, rgba(13,13,18,0.9), transparent);
+        }
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        nav a:hover { color: var(--med); }
+
+        /* ═══════════════════════════════════════════════ */
+        /* HERO - FULL BLEED SPLIT                         */
+        /* ═══════════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+        }
+        .hero-left {
+            padding: 180px 80px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .hero-tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--med);
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: clamp(3.5rem, 6vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+        .hero h1 .line2 {
+            color: var(--piki);
+        }
+        .hero h1 .line3 {
+            color: var(--gray);
+            font-weight: 400;
+        }
+        .hero-intro {
+            margin-top: 40px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--gray);
+            max-width: 480px;
+        }
+        .hero-intro strong { color: var(--white); }
+        .hero-cta {
+            margin-top: 48px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: var(--piki);
+            color: var(--white);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .hero-cta:hover {
+            background: var(--med);
+            transform: translateX(8px);
+        }
+        .hero-right {
+            background: var(--deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-right::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 70%, rgba(51,106,234,0.4) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(23,209,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255,125,106,0.2) 0%, transparent 40%);
+            animation: gradientShift 10s ease-in-out infinite alternate;
+        }
+        @keyframes gradientShift {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.1) rotate(5deg); }
+        }
+        .hero-stack {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .stack-item {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border-left: 2px solid var(--piki);
+            color: var(--gray);
+            transition: all 0.3s;
+        }
+        .stack-item:hover {
+            background: rgba(51,106,234,0.15);
+            border-color: var(--med);
+            color: var(--white);
+            transform: translateX(8px);
+        }
+        .stack-item span { color: var(--med); }
+
+        /* ═══════════════════════════════════════════════ */
+        /* BENTO GRID - FREEPIK SUITE                      */
+        /* ═══════════════════════════════════════════════ */
+        .bento {
+            padding: 120px 48px;
+            background: var(--black);
+        }
+        .bento-header {
+            max-width: 600px;
+            margin-bottom: 64px;
+        }
+        .bento-header .tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--med);
+            margin-bottom: 16px;
+        }
+        .bento-header h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 200px;
+            gap: 16px;
+        }
+        .bento-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(51,106,234,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .bento-card:hover {
+            border-color: var(--piki);
+            transform: translateY(-4px);
+        }
+        .bento-card:hover::after { opacity: 1; }
+        .bento-card.large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+        .bento-card.wide {
+            grid-column: span 2;
+        }
+        .bento-card.tall {
+            grid-row: span 2;
+        }
+        .bento-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        .bento-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+        .bento-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--gray);
+            position: relative;
+            z-index: 2;
+        }
+        .bento-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: auto;
+            position: relative;
+            z-index: 2;
+        }
+        .bento-tags span {
+            padding: 4px 10px;
+            background: rgba(23,209,198,0.1);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--med);
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* AI EXPERIENCE - HORIZONTAL SCROLL               */
+        /* ═══════════════════════════════════════════════ */
+        .ai-exp {
+            padding: 120px 0;
+            background: var(--deep);
+            overflow: hidden;
+        }
+        .ai-exp-header {
+            padding: 0 48px;
+            margin-bottom: 64px;
+        }
+        .ai-exp-header .tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--red);
+            margin-bottom: 16px;
+        }
+        .ai-exp-header h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .ai-exp-header p {
+            margin-top: 16px;
+            font-size: 16px;
+            color: var(--gray);
+            max-width: 600px;
+        }
+        .ai-track {
+            display: flex;
+            gap: 24px;
+            padding: 0 48px 24px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+        .ai-track::-webkit-scrollbar { display: none; }
+        .ai-item {
+            min-width: 320px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 40px;
+            scroll-snap-align: start;
+            transition: all 0.3s;
+        }
+        .ai-item:hover {
+            border-color: var(--piki);
+            background: rgba(51,106,234,0.08);
+        }
+        .ai-item .cat {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--med);
+            margin-bottom: 16px;
+        }
+        .ai-item h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .ai-item p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--gray);
+        }
+        .ai-item .tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        .ai-item .tools span {
+            padding: 6px 12px;
+            background: rgba(51,106,234,0.15);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--piki);
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* CONSULTING - NUMBERED LIST                      */
+        /* ═══════════════════════════════════════════════ */
+        .consulting {
+            padding: 120px 48px;
+            background: var(--black);
+        }
+        .consulting-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .consulting .tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--piki);
+            margin-bottom: 16px;
+        }
+        .consulting h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 64px;
+        }
+        .consult-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .consult-item {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 32px;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.3s;
+        }
+        .consult-item:hover {
+            padding-left: 16px;
+            border-color: var(--piki);
+        }
+        .consult-item .num {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--deep);
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        .consult-item:hover .num { color: var(--piki); }
+        .consult-item h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .consult-item p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--gray);
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* EXPERIENCE - TIMELINE                           */
+        /* ═══════════════════════════════════════════════ */
+        .timeline {
+            padding: 120px 48px;
+            background: var(--cream);
+            color: var(--black);
+        }
+        .timeline-inner {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .timeline .tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--piki);
+            margin-bottom: 16px;
+        }
+        .timeline h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 64px;
+        }
+        .tl-item {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 40px;
+            padding: 32px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        .tl-item:last-child { border-bottom: none; }
+        .tl-year {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--piki);
+        }
+        .tl-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .tl-content .co {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 12px;
+        }
+        .tl-content p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #666;
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* WHY - GRID                                      */
+        /* ═══════════════════════════════════════════════ */
+        .why {
+            padding: 120px 48px;
+            background: var(--black);
+        }
+        .why-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .why .tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--med);
+            margin-bottom: 16px;
+        }
+        .why h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 64px;
+        }
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .why-item {
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        .why-item:hover {
+            border-color: var(--med);
+            transform: translateY(-4px);
+        }
+        .why-item h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .why-item p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--gray);
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* CTA                                             */
+        /* ═══════════════════════════════════════════════ */
+        .cta {
+            padding: 180px 48px;
+            background: var(--piki);
+            text-align: center;
+        }
+        .cta h2 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            margin-bottom: 24px;
+        }
+        .cta p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+        .cta-btn {
+            display: inline-flex;
+            padding: 20px 48px;
+            background: var(--white);
+            color: var(--deep);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .cta-links {
+            margin-top: 48px;
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+        }
+        .cta-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .cta-links a:hover { color: var(--white); }
+
+        /* ═══════════════════════════════════════════════ */
+        /* FOOTER                                          */
+        /* ═══════════════════════════════════════════════ */
+        footer {
+            padding: 32px 48px;
+            background: var(--black);
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--gray);
+            letter-spacing: 1px;
+        }
+
+        /* ═══════════════════════════════════════════════ */
+        /* RESPONSIVE                                      */
+        /* ═══════════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-right { min-height: 400px; }
+            .bento-grid { grid-template-columns: repeat(2, 1fr); }
+            .bento-card.large { grid-column: span 2; grid-row: span 1; }
+            .why-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            nav { padding: 16px 24px; }
+            .hero-left { padding: 120px 24px 60px; }
+            .bento { padding: 80px 24px; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card.large, .bento-card.wide { grid-column: span 1; }
+            .bento-card.tall { grid-row: span 1; }
+            .ai-exp { padding: 80px 0; }
+            .ai-exp-header { padding: 0 24px; }
+            .ai-track { padding: 0 24px 24px; }
+            .ai-item { min-width: 280px; padding: 32px; }
+            .consulting { padding: 80px 24px; }
+            .consult-item { grid-template-columns: 1fr; gap: 16px; }
+            .consult-item .num { font-size: 32px; }
+            .timeline { padding: 80px 24px; }
+            .tl-item { grid-template-columns: 1fr; gap: 12px; }
+            .why { padding: 80px 24px; }
+            .why-grid { grid-template-columns: 1fr; }
+            .cta { padding: 100px 24px; }
+            .cta-links { flex-direction: column; gap: 16px; }
+            footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+            .crosshair { display: none; }
+            body { cursor: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- GRAIN -->
+<div class="grain"></div>
+
+<!-- CROSSHAIR CURSOR -->
+<div class="crosshair" id="crosshair">
+    <div class="crosshair-h"></div>
+    <div class="crosshair-v"></div>
+    <div class="crosshair-dot"></div>
+    <div class="crosshair-coords" id="coords">0, 0</div>
+</div>
+
+<!-- INTRO -->
+<div id="intro">
+    <div class="intro-terminal">
+        <span>freepik.ai</span> > <span class="typed" id="typed"></span>
+    </div>
+</div>
+
+<!-- NAV -->
+<nav>
+    <span>Jan Lönnqvist</span>
+    <span>AI Creative Consultant / Europe</span>
+    <a href="mailto:jan.lonnqvist@windowslive.com">Contact</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-left">
+        <div class="hero-tag">Application</div>
+        <h1>
+            <span class="line1">AI Creative</span><br>
+            <span class="line2">Consultant</span><br>
+            <span class="line3">for Freepik</span>
+        </h1>
+        <p class="hero-intro">12+ years visual production. <strong>Deep GenAI experience</strong> across international campaigns. Ready to master the Freepik AI Suite and help enterprise clients unlock its full potential.</p>
+        <a href="#suite" class="hero-cta">View Approach →</a>
+    </div>
+    <div class="hero-right">
+        <div class="hero-stack">
+            <div class="stack-item"><span>const</span> experience = "12+ years";</div>
+            <div class="stack-item"><span>const</span> markets = 40;</div>
+            <div class="stack-item"><span>const</span> ai_tools = ["Veo3", "Sora2", "Claude", "ChatGPT"];</div>
+            <div class="stack-item"><span>const</span> ready = <span>true</span>;</div>
+        </div>
+    </div>
+</section>
+
+<!-- BENTO - FREEPIK SUITE -->
+<section class="bento" id="suite">
+    <div class="bento-header">
+        <div class="tag">The Mission</div>
+        <h2>Ready to Master the Freepik AI Suite</h2>
+    </div>
+    <div class="bento-grid">
+        <div class="bento-card large">
+            <div class="bento-icon">🎨</div>
+            <div>
+                <h3>AI Image Generation</h3>
+                <p>Ready to master Freepik's image generation stack and demonstrate its power to enterprise clients. Building POCs for rapid prototyping, campaign assets, brand-consistent visuals at scale.</p>
+            </div>
+            <div class="bento-tags">
+                <span>Imagen 3 & 4</span>
+                <span>Flux</span>
+                <span>Ideogram</span>
+                <span>Mystic</span>
+                <span>Seedream</span>
+            </div>
+        </div>
+        <div class="bento-card">
+            <div class="bento-icon">🎬</div>
+            <h3>Video Generation</h3>
+            <p>Enterprise video workflows using Freepik's multi-model approach.</p>
+            <div class="bento-tags">
+                <span>Veo 3</span>
+                <span>Kling</span>
+                <span>Runway</span>
+            </div>
+        </div>
+        <div class="bento-card">
+            <div class="bento-icon">🎙️</div>
+            <h3>Voice + Lip Sync</h3>
+            <p>Multi-language voiceover solutions for European market localization.</p>
+            <div class="bento-tags">
+                <span>Voice Gen</span>
+                <span>Lip Sync</span>
+            </div>
+        </div>
+        <div class="bento-card wide">
+            <div class="bento-icon">💼</div>
+            <h3>Enterprise Client Consulting</h3>
+            <p>The real value: translating Freepik's AI capabilities into solutions that solve client problems. Pre-sale demos that close deals. Post-sale training that ensures adoption.</p>
+            <div class="bento-tags">
+                <span>POC Development</span>
+                <span>Live Demos</span>
+                <span>On-Site Training</span>
+                <span>Workflow Design</span>
+            </div>
+        </div>
+        <div class="bento-card">
+            <div class="bento-icon">✨</div>
+            <h3>Photo Suite</h3>
+            <p>Background removal, upscaling, quick edits. High-volume optimization.</p>
+            <div class="bento-tags">
+                <span>BG Remover</span>
+                <span>Upscaler</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI EXPERIENCE -->
+<section class="ai-exp">
+    <div class="ai-exp-header">
+        <div class="tag">Why I'll Excel</div>
+        <h2>Production-Proven AI Experience</h2>
+        <p>I've shipped international campaigns using the same technologies that power Freepik's suite. This hands-on experience means I can speak authentically to enterprise clients.</p>
+    </div>
+    <div class="ai-track">
+        <div class="ai-item">
+            <div class="cat">Video Generation</div>
+            <h3>AI Video for International Campaigns</h3>
+            <p>Used Veo 3 and Sora 2 to create AI-generated video content for multi-market campaign launches. Concept visualization, rapid prototyping.</p>
+            <div class="tools">
+                <span>Veo 3</span>
+                <span>Sora 2</span>
+                <span>Runway</span>
+            </div>
+        </div>
+        <div class="ai-item">
+            <div class="cat">LLM Integration</div>
+            <h3>ChatGPT + Claude in Production</h3>
+            <p>Daily use for creative workflows: copy generation, localization, prompt engineering. Deep understanding of getting consistent, brand-safe outputs.</p>
+            <div class="tools">
+                <span>ChatGPT</span>
+                <span>Claude</span>
+                <span>Prompting</span>
+            </div>
+        </div>
+        <div class="ai-item">
+            <div class="cat">Voice Synthesis</div>
+            <h3>AI TTS Across 8 Markets</h3>
+            <p>Implemented AI TTS workflows for multi-language campaign delivery. Neural voice synthesis for consistent brand voice across European markets.</p>
+            <div class="tools">
+                <span>ElevenLabs</span>
+                <span>Azure TTS</span>
+            </div>
+        </div>
+        <div class="ai-item">
+            <div class="cat">Image Generation</div>
+            <h3>AI Imagery in Campaign Production</h3>
+            <p>Midjourney, DALL-E 3, Stable Diffusion for production-ready assets. Mood boards, rapid prototyping, asset variations.</p>
+            <div class="tools">
+                <span>Midjourney</span>
+                <span>DALL-E 3</span>
+                <span>SD</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONSULTING SKILLS -->
+<section class="consulting">
+    <div class="consulting-inner">
+        <div class="tag">Consultant Skillset</div>
+        <h2>What I Bring to Client Relationships</h2>
+        <div class="consult-list">
+            <div class="consult-item">
+                <div class="num">01</div>
+                <div>
+                    <h3>Live Demo Excellence</h3>
+                    <p>Comfortable presenting to stakeholders at all levels. Translating technical features into business benefits. Making complex AI accessible.</p>
+                </div>
+            </div>
+            <div class="consult-item">
+                <div class="num">02</div>
+                <div>
+                    <h3>POC Development</h3>
+                    <p>Building proof-of-concept solutions that show clients exactly how Freepik's tools solve their specific challenges. Custom examples that close deals.</p>
+                </div>
+            </div>
+            <div class="consult-item">
+                <div class="num">03</div>
+                <div>
+                    <h3>Training Delivery</h3>
+                    <p>On-site and remote training that ensures adoption. Clear documentation, hands-on workshops, follow-up support.</p>
+                </div>
+            </div>
+            <div class="consult-item">
+                <div class="num">04</div>
+                <div>
+                    <h3>Workflow Design</h3>
+                    <p>Identifying client pain points and designing AI workflows that address them. Not just showing tools, but architecting solutions.</p>
+                </div>
+            </div>
+            <div class="consult-item">
+                <div class="num">05</div>
+                <div>
+                    <h3>Presentation Design</h3>
+                    <p>Creating visually outstanding client materials independently. Decks, one-pagers, case studies that make the value proposition clear.</p>
+                </div>
+            </div>
+            <div class="consult-item">
+                <div class="num">06</div>
+                <div>
+                    <h3>Sales Partnership</h3>
+                    <p>Supporting pre-sale conversations with technical credibility. Post-sale relationship management that drives retention.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="timeline">
+    <div class="timeline-inner">
+        <div class="tag">Career</div>
+        <h2>12+ Years Visual Production</h2>
+        <div class="tl-item">
+            <div class="tl-year">2024</div>
+            <div class="tl-content">
+                <h3>Senior Graphic Designer</h3>
+                <div class="co">DHL / Agency / 12+ European Markets</div>
+                <p>Multi-market campaign delivery with AI integration. Self-led localization, client presentations, workflow optimization.</p>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-year">2022-24</div>
+            <div class="tl-content">
+                <h3>Visual Specialist</h3>
+                <div class="co">Rituals Cosmetics / Amsterdam / Global</div>
+                <p>Seasonal campaigns across 40+ markets. Introduced AI tools for rapid prototyping. Platform-specific optimization.</p>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-year">2022</div>
+            <div class="tl-content">
+                <h3>Creative / DTP Lead</h3>
+                <div class="co">HelloFresh / Amsterdam</div>
+                <p>Led design team at Europe's largest meal kit company. High-volume production, AI-enhanced workflows.</p>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-year">2019-20</div>
+            <div class="tl-content">
+                <h3>Graphic Artist</h3>
+                <div class="co">IKEA Group</div>
+                <p>Global retail production. Multi-format campaigns, brand guidelines, high-volume delivery.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHY -->
+<section class="why">
+    <div class="why-inner">
+        <div class="tag">Why Me</div>
+        <h2>The Right Fit for This Role</h2>
+        <div class="why-grid">
+            <div class="why-item">
+                <h3>AI-Native Creative</h3>
+                <p>I already work with the same technologies powering Freepik's suite: Veo 3, image generators, voice synthesis. I'll master your specific tools fast.</p>
+            </div>
+            <div class="why-item">
+                <h3>Enterprise Understanding</h3>
+                <p>DHL, Rituals, IKEA, HelloFresh. I know enterprise clients: their processes, concerns, and need for scalable solutions.</p>
+            </div>
+            <div class="why-item">
+                <h3>Production Background</h3>
+                <p>12+ years shipping creative work at scale. I understand what clients actually need to deliver, not just what looks good in demos.</p>
+            </div>
+            <div class="why-item">
+                <h3>European Coverage</h3>
+                <p>Based in Amsterdam, experienced across 12+ European markets. Multi-language campaigns, cultural nuance, travel-ready.</p>
+            </div>
+            <div class="why-item">
+                <h3>Consultant Mindset</h3>
+                <p>Not just execution. I identify pain points, design workflows, train teams, and ensure adoption. The full consulting lifecycle.</p>
+            </div>
+            <div class="why-item">
+                <h3>Freepik User</h3>
+                <p>I've used Freepik resources throughout my career. I believe in "great design, faster." Now I want to help enterprise clients experience it.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <h2>Let's Build<br>AI Futures</h2>
+    <p>Ready to become your expert on the Freepik AI Suite and help enterprise clients unlock its full potential.</p>
+    <a href="mailto:jan.lonnqvist@windowslive.com" class="cta-btn">Get In Touch</a>
+    <div class="cta-links">
+        <a href="mailto:jan.lonnqvist@windowslive.com">jan.lonnqvist@windowslive.com</a>
+        <a href="tel:+31619584748">+31 619 584 748</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <span>Jan Lönnqvist / 2026</span>
+    <span>Amsterdam, NL / Remote Europe</span>
+</footer>
+
+<script>
+// CROSSHAIR CURSOR
+const crosshair = document.getElementById('crosshair');
+const coords = document.getElementById('coords');
+let cx = 0, cy = 0, tx = 0, ty = 0;
+
+document.addEventListener('mousemove', e => {
+    tx = e.clientX;
+    ty = e.clientY;
+});
+
+function animateCrosshair() {
+    cx += (tx - cx) * 0.15;
+    cy += (ty - cy) * 0.15;
+    crosshair.style.left = cx + 'px';
+    crosshair.style.top = cy + 'px';
+    coords.textContent = Math.round(cx) + ', ' + Math.round(cy);
+    requestAnimationFrame(animateCrosshair);
+}
+animateCrosshair();
+
+document.querySelectorAll('a, .bento-card, .ai-item, .consult-item, .why-item, .stack-item').forEach(el => {
+    el.addEventListener('mouseenter', () => crosshair.classList.add('hover'));
+    el.addEventListener('mouseleave', () => crosshair.classList.remove('hover'));
+});
+
+// TYPING INTRO
+const typed = document.getElementById('typed');
+const text = 'load consultant --name "Jan Lönnqvist"';
+let i = 0;
+function type() {
+    if (i < text.length) {
+        typed.textContent = text.slice(0, i + 1);
+        i++;
+        setTimeout(type, 50 + Math.random() * 30);
+    } else {
+        setTimeout(() => {
+            document.getElementById('intro').classList.add('exit');
+            setTimeout(() => document.getElementById('intro').remove(), 800);
+        }, 600);
+    }
+}
+setTimeout(type, 500);
+
+// PROTECTION
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+    if (e.key === 'F12') e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) e.preventDefault();
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+</script>
+
+</body>
+</html>
